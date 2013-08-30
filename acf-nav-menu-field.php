@@ -21,12 +21,9 @@ class acf_field_nav_menu_plugin {
 	*/
 
 	function __construct() {
-		// set text domain
-		/*
-		$domain = 'acf-nav_menu';
-		$mofile = trailingslashit(dirname(__File__)) . 'lang/' . $domain . '-' . get_locale() . '.mo';
+		$domain = 'acf-nav-menu-field';
+		$mofile = trailingslashit( dirname( __File__) ) . 'lang/' . $domain . '-' . get_locale() . '.mo';
 		load_textdomain( $domain, $mofile );
-		*/
 
 		// version 4+
 		add_action( 'acf/register_fields', array( $this, 'register_fields' ) );
