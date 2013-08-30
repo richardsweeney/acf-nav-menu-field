@@ -17,7 +17,7 @@ class acf_field_nav_menu_plugin {
 	*
 	*  @description:
 	*  @since: 3.6
-	*  @created: 1/04/13
+	*  @date	28/09/13
 	*/
 
 	function __construct() {
@@ -37,11 +37,11 @@ class acf_field_nav_menu_plugin {
 	*
 	*  @description:
 	*  @since: 3.6
-	*  @created: 1/04/13
+	*  @date	28/09/13
 	*/
 
 	function register_fields() {
-		include_once( 'acf-nav-menu-field-v4.php' );
+		include_once( plugin_dir_path( __FILE__ ) . 'acf-nav-menu-field-v4.php' );
 	}
 
 }

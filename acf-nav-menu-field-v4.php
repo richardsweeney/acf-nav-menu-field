@@ -1,11 +1,8 @@
 <?php
 
-class acf_field_nav_menu extends acf_field
-{
-	// vars
-	var $settings, // will hold info such as dir / path
-		$defaults; // will hold default field options
+class acf_field_nav_menu extends acf_field {
 
+	public $settings, $defaults, $name, $label, $category;
 
 	/*
 	*  __construct
@@ -13,25 +10,18 @@ class acf_field_nav_menu extends acf_field
 	*  Set name / label needed for actions / filters
 	*
 	*  @since	3.6
-	*  @date	23/01/13
+	*  @date	28/09/13
 	*/
 
-	function __construct()
-	{
-		// vars
+	function __construct() {
+
 		$this->name     = 'acf_field_nav_menu';
-		$this->label    = __( 'Nav Menu', 'acf' );
-		$this->category = __( 'Relational','acf' );
-		$this->defaults = array(
-			// add default here to merge into your field.
-			// This makes life easy when creating the field options as you don't need to use any if( isset('') ) logic. eg:
-			//'preview_size' => 'thumbnail'
-		);
+		$this->label    = __( 'Nav Menu', 'acf-nav-menu-field' );
+		$this->category = __( 'Relational','acf-nav-menu-field' );
+		$this->defaults = array();
 
     	parent::__construct();
 
-
-    	// settings
 		$this->settings = array(
 			'path'    => apply_filters( 'acf/helpers/get_path', __FILE__ ),
 			'dir'     => apply_filters( 'acf/helpers/get_dir', __FILE__ ),
@@ -49,7 +39,7 @@ class acf_field_nav_menu extends acf_field
 	*
 	*  @type	action
 	*  @since	3.6
-	*  @date	23/01/13
+	*  @date	28/09/13
 	*
 	*  @param	$field	- an array holding all the field's data
 	*/
@@ -72,8 +62,8 @@ class acf_field_nav_menu extends acf_field
 		<tr class="field_option field_option_<?php echo $this->name; ?>">
 
 			<td class="label">
-				<label><?php _e( 'Select a menu', 'acf' ); ?></label>
-				<p class="description"><?php _e( 'Select a menu from the list', 'acf'); ?></p>
+				<label><?php _e( 'Select a menu', 'acf-nav-menu-field' ); ?></label>
+				<p class="description"><?php _e( 'Select a menu from the list', 'acf-nav-menu-field'); ?></p>
 			</td>
 
 			<td>
@@ -156,7 +146,7 @@ class acf_field_nav_menu extends acf_field
 	*
 	*  @type	filter
 	*  @since	3.6
-	*  @date	23/01/13
+	*  @date	28/09/13
 	*
 	*  @param	$value - the value which will be saved in the database
 	*  @param	$post_id - the $post_id of which the value will be saved
