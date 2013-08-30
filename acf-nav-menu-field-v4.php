@@ -89,54 +89,64 @@ class acf_field_nav_menu extends acf_field {
 	*
 	*  @type	action
 	*  @since	3.6
-	*  @date	23/01/13
+	*  @date	28/09/13
 	*/
 
 	function create_field( $field ) {
-		include_once( plugin_dir_path( __FILE__ ) . 'acf-nav-menu-custom-walker.php' );
+		global $wpdb, $post;
 
 		extract( $field );
 
+		$select_name   = $name . '[select]';
+		$checkbox_name = $name . '[checkbox]';
+		$menu_name     = $name . '[menu_id]';
+		$cb            = isset( $value['checkbox'] ) ? $value['checkbox'] : 0;
+
 		// Not sure if this will ever happen, but just in case!
 		if ( ! $menu || empty( $menu ) ) : ?>
-			<p><?php _e( 'Please select a menu when adding the field group.', 'acf' ) ?></p>
+			<p><?php _e( 'Please select a menu when adding the field group.', 'acf-nav-menu-field' ) ?></p>
 			<?php return;
+
+		endif;
+
+		// Get the parent of the current post_id's menu link from the DB. This
+		// may be different from the post meta if the user may have updated the
+		// menu item via the admin UI.
+
+		// This value becomes the selected value for the select lists, so it'll
+		// update itself when the user saves the post.
+		$sql          = "SELECT post_id FROM $wpdb->postmeta WHERE meta_key='_menu_item_object_id' AND meta_value='%d'";
+		$menu_item_id = $wpdb->get_var( $wpdb->prepare( $sql, $post->ID ) );
+		$parent_id    = get_post_meta( $menu_item_id, '_menu_item_menu_item_parent', true ); ?>
+
+		<p>
+			<input type="checkbox" name="<?php echo esc_attr( $checkbox_name ) ?>" id="acf-show-in-menu" value="1" <?php checked( $cb, 1 ) ?>>
+			<label for="acf-show-in-menu"><?php _e( 'Add this page to the menu', 'acf-nav-menu-field' ) ?> *</label>
+		</p>
+
+		<input type="hidden" name="<?php echo esc_attr( $menu_name ) ?>" value="<?php echo esc_attr( $menu ) ?>">
+		<label for="<?php echo esc_attr( $id ) ?>"><?php _e( 'Select a parent for the menu item', 'acf-nav-menu-field' ) ?></label>
+
+		<?php $menu_items = wp_get_nav_menu_items( $menu ); // Check if the meny is empty
+
+		if ( empty( $menu_items ) ) :
+			echo "<select name='$select_name' id='$id' class='$class'><option value='0'> -- " . __( 'No parent', 'acf-nav-menu-field' ) . ' -- </option></select>';
+
+		else :
+			include_once( plugin_dir_path( __FILE__ ) . 'acf-nav-menu-custom-walker.php' );
+
+			wp_nav_menu( array(
+				'menu'       => $menu,
+				'container'  => 'div',
+				'items_wrap' => "<select name='$select_name' id='$id' class='$class'><option value='0'> -- " . __( 'No parent', 'acf-nav-menu-field' ) . ' -- </option>' . '%3$s</select>',
+				'walker'     => new Acf_Nav_Menu_Custom_Walker( $parent_id ),
+			) );
+
 		endif ?>
 
-		<input type="hidden" name="acf-menu-id" value="<?php echo $menu ?>">
-		<label for="<?php echo $id ?>"><?php _e( 'Select a parent for the menu item', 'acf' ) ?></label>
+		<p><br><em>* <?php printf( _( 'To delete an item from the menu please use the %smenu admin page%s', 'acf-nav-menu-field' ), '<a href="' . admin_url( 'nav-menus.php') . '">', '</a>' ) ?>.</em></p>
 
-		<?php wp_nav_menu( array(
-			'menu'       => $menu,
-			'container'  => 'div',
-			'items_wrap' => "<select name='$name' id='$id' class='$class'><option value='0'> -- " . __( 'No parent', 'acf' ) . ' -- </option>' . '%3$s</select>',
-			'walker'     => new Acf_Nav_Menu_Custom_Walker( $value ),
-		) );
-
-	}
-
-
-	/*
-	*  load_value()
-	*
-	*  This filter is appied to the $value after it is loaded from the db
-	*
-	*  @type	filter
-	*  @since	3.6
-	*  @date	23/01/13
-	*
-	*  @param	$value - the value found in the database
-	*  @param	$post_id - the $post_id from which the value was loaded from
-	*  @param	$field - the field array holding all the field options
-	*
-	*  @return	$value - the value to be saved in te database
-	*/
-
-	function load_value($value, $post_id, $field)
-	{
-		// Note: This function can be removed if not used
-		return $value;
-	}
+	<?php }
 
 
 	/*
