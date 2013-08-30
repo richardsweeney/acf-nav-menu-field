@@ -166,151 +166,62 @@ class acf_field_nav_menu extends acf_field {
 	*/
 
 	function update_value( $value, $post_id, $field ) {
+		// Not our field
 		if ( 'acf_field_nav_menu' != $field['type'] )
 			return $value;
 
-		$menu_id        = (int) $_REQUEST['acf-menu-id']; // The menu to which to add the menu item
-		$post_type      = get_post_type( $post_id );
-		$nav_menu_items = wp_get_nav_menu_items( $menu_id );
-		$title          = get_the_title( $post_id );
-		$exists         = false;
+		// Don't add the page to the menu
+		if ( ! isset( $value['checkbox'] ) || '1' != $value['checkbox'] )
+			return $value;
 
-		// Check if the item already exists
+		$post_type = get_post_type( $post_id );
+
+		if ( 'revision' == $post_type )
+			return $value;
+
+
+		$menu_id         = (int) $value['menu_id']; // The menu to which to add the menu item
+		$nav_menu_items  = wp_get_nav_menu_items( $menu_id );
+		$title           = get_the_title( $post_id );
+		$exists          = false;
+		$select_value    = ( $value['select'] ) ? $value['select'] : 0;
+		$menu_item_db_id = 0;
+
+		// Check if the item already exists in the menu
 		foreach ( $nav_menu_items as $nav_item ) {
 
-			// If the title is the same and they have the same parent, we've got a match
-		    if ( strtolower( $title ) == strtolower( $nav_item->title ) && $value == $nav_item->menu_item_parent ) {
-		        $exists = true;
-		        break;
+			// If the title is the same we've got a match
+		    if ( strtolower( $title ) == strtolower( $nav_item->title ) ) {
+
+		    	// If they have the same parent, bail
+		    	if ( $select_value == $nav_item->menu_item_parent ) {
+		    		return $value;
+
+		    	// New parent: we need to update the menu item & we can exit the loop
+		    	} else {
+		    		$menu_item_db_id = $nav_item->ID;
+		    		break;
+
+		    	}
+
 		    }
 
 		}
 
-
-		if ( ! $exists ) {
-
-		    wp_update_nav_menu_item( $menu_id, 0, array(
-		        'menu-item-title'     => $title,
-		        'menu-item-url'       => get_permalink( $post_id ),
-		        'menu-item-status'    => 'publish',
-		        // $value is the parent item in the menu for the page, it can be 0 ( no parent )
-		        'menu-item-parent-id' => $value,
-		        'menu-item-object-id' => $post_id,
-		        'menu-item-object'    => $post_type,
-		        'menu-item-type'      => 'post_type',
-		    ) );
-
-		}
+		// If we've got this far we need to create / update the nav menu item
+	    wp_update_nav_menu_item( $menu_id, $menu_item_db_id, array(
+	        'menu-item-title'     => $title,
+	        'menu-item-url'       => get_permalink( $post_id ),
+	        'menu-item-status'    => 'publish',
+	        // $value is the parent item in the menu for the page, it can be 0 ( no parent )
+	        'menu-item-parent-id' => $select_value,
+	        'menu-item-object-id' => $post_id,
+	        'menu-item-object'    => $post_type,
+	        'menu-item-type'      => 'post_type',
+		) );
 
 	    return $value;
-
 	}
-
-
-	/*
-	*  format_value()
-	*
-	*  This filter is appied to the $value after it is loaded from the db and before it is passed to the create_field action
-	*
-	*  @type	filter
-	*  @since	3.6
-	*  @date	23/01/13
-	*
-	*  @param	$value	- the value which was loaded from the database
-	*  @param	$post_id - the $post_id from which the value was loaded
-	*  @param	$field	- the field array holding all the field options
-	*
-	*  @return	$value	- the modified value
-	*/
-
-	function format_value($value, $post_id, $field)
-	{
-		// defaults?
-		/*
-		$field = array_merge($this->defaults, $field);
-		*/
-
-		// perhaps use $field['preview_size'] to alter the $value?
-
-
-		// Note: This function can be removed if not used
-		return $value;
-	}
-
-
-	/*
-	*  format_value_for_api()
-	*
-	*  This filter is appied to the $value after it is loaded from the db and before it is passed back to the api functions such as the_field
-	*
-	*  @type	filter
-	*  @since	3.6
-	*  @date	23/01/13
-	*
-	*  @param	$value	- the value which was loaded from the database
-	*  @param	$post_id - the $post_id from which the value was loaded
-	*  @param	$field	- the field array holding all the field options
-	*
-	*  @return	$value	- the modified value
-	*/
-
-	function format_value_for_api($value, $post_id, $field)
-	{
-		// defaults?
-		/*
-		$field = array_merge($this->defaults, $field);
-		*/
-
-		// perhaps use $field['preview_size'] to alter the $value?
-
-
-		// Note: This function can be removed if not used
-		return $value;
-	}
-
-
-	/*
-	*  load_field()
-	*
-	*  This filter is appied to the $field after it is loaded from the database
-	*
-	*  @type	filter
-	*  @since	3.6
-	*  @date	23/01/13
-	*
-	*  @param	$field - the field array holding all the field options
-	*
-	*  @return	$field - the field array holding all the field options
-	*/
-
-	function load_field($field)
-	{
-		// Note: This function can be removed if not used
-		return $field;
-	}
-
-
-	/*
-	*  update_field()
-	*
-	*  This filter is appied to the $field before it is saved to the database
-	*
-	*  @type	filter
-	*  @since	3.6
-	*  @date	23/01/13
-	*
-	*  @param	$field - the field array holding all the field options
-	*  @param	$post_id - the field group ID (post_type = acf)
-	*
-	*  @return	$field - the modified field
-	*/
-
-	function update_field($field, $post_id)
-	{
-		// Note: This function can be removed if not used
-		return $field;
-	}
-
 
 }
 
