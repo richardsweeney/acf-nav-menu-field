@@ -144,7 +144,7 @@ class acf_field_nav_menu extends acf_field {
 
 		endif ?>
 
-		<p><br><em>* <?php printf( _( 'To delete an item from the menu please use the %smenu admin page%s', 'acf-nav-menu-field' ), '<a href="' . admin_url( 'nav-menus.php') . '">', '</a>' ) ?>.</em></p>
+		<p><br><em>* <?php printf( __( 'To delete an item from the menu please use the %smenu admin page%s', 'acf-nav-menu-field' ), '<a href="' . admin_url( 'nav-menus.php') . '">', '</a>' ) ?>.</em></p>
 
 	<?php }
 
